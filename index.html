@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>首页</title>
+	<link rel="stylesheet" href="css/common.css">
+	<meta name="viewport" content="width=device-width,height=device-height,inital-scale=1.0,maximum-scale=1.0,user-scalable=no">
+</head>
+<body>
+	<div class="top">语音合成</div>
+	<div class="box">
+		<div class="title">请输入需要合成的文案:</div>
+		<div class="textarea">
+			<textarea name="" class="content"></textarea>
+			<div>
+				最多可以输入<span class="text">200</span>个字
+
+				<span class="iconfont delall" style="float: right; font-size: 24px;color: #444;cursor: pointer; display: none;">&#xe71c;</span>
+			</div>
+		</div>
+		<div class="person">
+			<div>发声人</div>
+			<label><input type="radio" name="people" value="1">&nbsp;&nbsp;普通男生</label>
+			<label><input type="radio" name="people" value="0" checked>&nbsp;&nbsp;普通女生</label>
+			<label><input type="radio" name="people" value="3">&nbsp;&nbsp;度逍遥(大侠)</label>
+			<label><input type="radio" name="people" value="4">&nbsp;&nbsp;度丫丫(软萌)</label>
+		</div>
+		<div class="yinliang">
+			<div>
+				<span>语速</span>
+				<input type="range" min="0" max="15" value="5" class="speed">&nbsp;&nbsp;×
+				<span>5</span>
+			</div>
+			<div>
+				<span>音调</span>
+				<input type="range" min="0" max="15" value="5" class="yd">&nbsp;&nbsp;
+				<span>5</span>
+			</div>
+			<div>
+				<span>音量</span>
+				<input type="range" min="0" max="15" value="5" class="vocie">&nbsp;&nbsp;
+				<span>5</span>
+			</div>
+		</div>
+		<div class="button">
+			<button class="iconfont play">&#xe949;&nbsp;&nbsp;播放</button>
+			<a href="javascript:;" class="iconfont x download">&#xe66a;&nbsp;&nbsp;下载</a>
+		</div>
+		
+	</div>
+	<div class="windowbox"><div><div><div class="loading"></div><div>loading</div></div></div></div>
+	<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
+	<script type="text/javascript">
+		$('.content').keyup(function(){
+			$('.text').html(200-$(this).val().length);
+		})
+		$('.content').change(function(){
+			if($(this).val() == ""){
+				$('.delall').hide();
+			}else{
+				$('.delall').show();
+			}
+		})
+		$('.delall').click(function(){
+			$('.content').val('');
+			$('.text').html(200);
+			$(this).hide();
+		})
+		$('input[type="range"]').change(function(){
+			$(this).next('span').html($(this).val());
+		})
+		var myAudio = new Audio();
+		//是否进行预加载
+		myAudio.preload = false;
+		//是否显示隐藏按钮
+		myAudio.controls = true;
+		myAudio.hidden = true;
+		myAudio.loop = false;
+
+		function playMusic(musicurl){
+		    myAudio.src =musicurl;
+		    //播放当前音乐
+		    myAudio.play();
+		}
+
+		$('.play').click(function(){
+			var con = $('.content').val();
+			if(con == ""){
+				alert('请输入需要合成的文案');
+				return;
+			}
+			var speed = $('.speed').val();
+			var yd = $('.yd').val();
+			var vocie = $('.vocie').val();
+			var per = $('input[name="people"]:checked').val();
+			$('.windowbox').show();
+			$.ajax({
+				url:'tts.php',
+				type:'post',
+				data:{con:con,speed:speed,yd:yd,vocie:vocie,per:per},
+				dataType:'json',
+				success:function(o){
+					$('.windowbox').hide();
+					if(o.ok){
+						playMusic(o.msg);
+						$('.download').attr('href','download.php?src='+o.msg);
+					}else{
+						alert(o.msg);
+					}
+				},
+				error:function(){
+					alert('服务器错误');
+				}
+			})
+		})
+	</script>
+</body>
+</html>
